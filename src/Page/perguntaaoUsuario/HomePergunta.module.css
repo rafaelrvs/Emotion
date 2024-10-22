@@ -1,0 +1,92 @@
+.ContainerMain{
+    height: 100%;
+    justify-content: center;
+   
+    width: 350px;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+.bubble {
+    width: 250px; /* Defina o tamanho da largura conforme necessário */
+    height: 150px; /* Defina o tamanho da altura conforme necessário */
+    background-color: white;
+    border: 3px solid #123E5F;
+    border-radius: 10px;
+    position: relative;
+  }
+  
+  .triangle {
+    width: 0;
+    height: 0;
+    border-left: 15px solid transparent;
+    border-right: 15px solid transparent;
+    border-top: 15px solid #123E5F;
+    position: absolute;
+    bottom: -15px;
+    left: 20px; /* Ajuste conforme a posição desejada */
+  }
+.conversa{
+    font-size:1.2rem;
+    font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+}
+.Personagem{
+    height: 250px;
+}
+.emocao{
+    height: 30px;
+}
+.selectEmogi{
+    margin-top: 50px;
+    display: flex;
+    height: 100px;
+
+    width: 250px;
+    flex-wrap: wrap;
+    overflow: auto;
+
+    gap: 25px;
+    flex-direction: column;
+}
+.emoti{
+    height: 50px;
+}
+.btnSub{
+    width:250px;
+    padding: 15px;
+    border: none;
+    background-color: #123E5F;
+    color: #fff;
+    margin-top: 20px;
+    font-size: 25px;
+
+}
+@media(max-width:650px) {
+    .bubble {
+        width: 350px; 
+        height: 200px; }
+    .Personagem{height: 350px;}
+    .selectEmogi,
+    .btnSub{width:350px;}
+    
+}
+@media(max-width:350px) {
+    .bubble {
+        width: 250px; 
+        height: 150px; }
+    .Personagem{height: 250px;}
+    .selectEmogi,
+    .btnSub{width:250px;}
+    
+}
+.emoti {
+    width: 50px;
+    height: 50px;
+    cursor: pointer;
+    transition: border 0.3s ease;
+  }
+  
+  .selected {
+    border: 2px solid #123E5F; /* Cor da borda igual à do botão */
+    border-radius: 50%;
+  }

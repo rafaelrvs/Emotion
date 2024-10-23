@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
-import Select from 'react-select';
+import React, { useContext, useEffect, useState } from 'react';
 import styles from "./HomePergunta.module.css";
 import { GoogleGenerativeAI } from "@google/generative-ai";
+import { GlobalContext } from '../../Context/GlobalContext'; 
+
 const emotiOptionList = [
   { id: 1, emocao: "feliz", url: "/public/emogi/feliz.png" },
   { id: 2, emocao: "alegre", url: "/public/emogi/Alegre.png" },
@@ -21,15 +22,31 @@ const emotiOptionList = [
 ];
 
 export const HomePergunta = () => {
-  
   let Personagem = "/public/personagem/diana.webp";
-  const [conversa, setConversa] = useState("Como você está se sentindo hoje? Escolha o emoticon que melhor te representa 🤩.");
+  const [conversa, setConversa] = useState("Oii eu sou a DIH, como você está se sentindo hoje? Escolha o emoticon que melhor te representa 🤩.");
   const [imagemEscolhida, setImagemEscolhida] = useState("");
+  const [isDisabled, setIsDisabled] = useState(false);
+  const [btnClicked, setBtnClicked] = useState(false);
+  const [loading, setLoading] = useState(false); 
 
-  // Função para lidar com a chamada da AI
+  const {emojiClicks, incrementEmojiClick } = useContext(GlobalContext); // Acessar o contexto global
+  
+  useEffect(() => {
+    console.log(emojiClicks);
+    
+    setTimeout(() => {
+      setIsDisabled(false);
+      setBtnClicked(false);
+    }, 3000);
+  }, [conversa]);
+
   function selectImage() {
+    setIsDisabled(true);
+    setBtnClicked(true);
+    setLoading(true); 
     activeAi(imagemEscolhida);
   }
+
   async function activeAi() {
     const apiKey = import.meta.env.VITE_GOOGLE_API_KEY;
 
@@ -39,22 +56,33 @@ export const HomePergunta = () => {
       history: [
         {
           role: "user",
-          parts: [{ text: `meu emoticon escolhido hoje que representa nmeu sentimento é ${imagemEscolhida}` }],
+          parts: [{ text: `meu emoticon escolhido hoje que representa meu sentimento é ${imagemEscolhida}` }],
         },
         {
           role: "model",
-          parts: [{ text: "Você tem que agir como piscologo e um assistente muito efetivo e prestativo, gosta de ajudar e responder com emoticons, deve tratar a pessoa bem, com resposta rapida e acertiva?" }],
+          parts: [{ text: "Você tem que agir como psicólogo e um assistente muito efetivo e prestativo, gosta de ajudar e responder com emoticons, deve tratar a pessoa bem, com resposta rápida e assertiva." }],
         },
       ],
     });
-    let result = await chat.sendMessage(`meu emoticon escolhido hoje que representa nmeu sentimento é ${imagemEscolhida}`);
-    setConversa(result.response.text());
 
-}
+    let result = await chat.sendMessage(`meu emoticon escolhido hoje que representa meu sentimento é ${imagemEscolhida}`);
+    setConversa(result.response.text());
+    setLoading(false); 
+  }
+
+  function handleEmojiClick(emocao) {
+    setImagemEscolhida(emocao); 
+    incrementEmojiClick(emocao); // Incrementa o contador global
+  }
+
   return (
     <div className={styles.ContainerMain}>
       <div className={styles.bubble}>
-        <p className={styles.conversa}>{conversa}</p>
+        <div className={styles.containerMensagem}>
+          <p className={styles.conversa}>
+            {loading ? <span className={styles.spinner}></span> : conversa}
+          </p>
+        </div>
         <div className={styles.triangle}></div>
       </div>
       <img className={styles.Personagem} src={Personagem} alt="Personagem" />
@@ -63,19 +91,20 @@ export const HomePergunta = () => {
         {emotiOptionList.map((emoti) => (
           <img
             key={emoti.emocao}
-            className={`${styles.emoti} ${imagemEscolhida === emoti.emocao ? styles.selected : ''}`} // Adiciona a classe 'selected' se for o escolhido
+            className={`${styles.emoti} ${imagemEscolhida === emoti.emocao ? styles.selected : ''}`}
             src={emoti.url}
             alt={emoti.emocao}
-            onClick={() => setImagemEscolhida(emoti.emocao)}  // Atualiza a emoção quando clicado
+            onClick={() => handleEmojiClick(emoti.emocao)} // Atualiza a emoção e incrementa o contador
           />
         ))}
       </div>
 
       <input 
-        className={styles.btnSub} 
+        className={`${styles.btnSub} ${btnClicked ? styles.btnClicked : ''}`} 
         type="submit" 
         value="Enviar" 
-        onClick={selectImage}  // Chama a função corretamente no clique
+        onClick={selectImage}  
+        disabled={isDisabled}
       />
     </div>
   );

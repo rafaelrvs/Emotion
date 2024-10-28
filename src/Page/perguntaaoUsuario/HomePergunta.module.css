@@ -1,140 +1,93 @@
-.ContainerMain{
-    height: 100%;
-    justify-content: center;
-   
-    width: 350px;
+.logo{
+    position: fixed;
+    z-index: 0;
+    top:80%;
+    left: 98%;
+    transform: translate(-50%,-50%);
+    opacity: 10%;
+    height: 1000px;
+}
+
+.Container{
     display: flex;
-    flex-direction: column;
-    gap: 15px;
-}
-.bubble {
-    width: 250px; /* Defina o tamanho da largura conforme necessário */
-    height: 150px; /* Defina o tamanho da altura conforme necessário */
-    background-color: white;
-    border: 3px solid #007bff;
-    border-radius: 10px;
+    justify-content: center;
+    width: 100vw;
     position: relative;
-  }
-  
-  .triangle {
-    width: 0;
-    height: 0;
-    border-left: 15px solid transparent;
-    border-right: 15px solid transparent;
-    border-top: 15px solid #007bff;
-    position: absolute;
-    bottom: -15px;
-    left: 20px; /* Ajuste conforme a posição desejada */
-  }
-  .containerMensagem{
-    overflow-y:scroll;
-    height: 95%;
-    padding: 5px;
-    width: 95%;
-  }
-.conversa{
-    font-size:1.2rem;
+    margin: 0 auto;
+
+}
+.ContainerMain{
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
     font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
-    padding: 5px;
 }
-.Personagem{
-    height: 250px;
-    border-radius: 5px;
-}
-.emocao{
-    height: 30px;
+.conversa{
+    font-weight: 600;
+    font-size: 3rem;
+    margin: 30px 0;
+    width: 100%;
+    text-align: center;
+    color: #261738;
 }
 .selectEmogi{
-    margin-top: 50px;
     display: flex;
-    height: 100px;
-
-    width: 250px;
     flex-wrap: wrap;
-    overflow: auto;
-
+    justify-content: center;
+    align-items: center;
+    z-index: 1;
+    max-width: 500px;    
     gap: 25px;
-    flex-direction: column;
+    font-size: 1.6rem;
+    font-weight: bold;
+    
+    
+}
+.containerEmoti{
+    padding: 5px;
+    display: grid;
+    justify-content: center;
+    position: relative;
+    width: 150px;
+    text-align: center;
+    color: #261738;
 }
 .emoti{
-    height: 50px;
-}
-.btnSub{
-    width:250px;
-    padding: 15px;
-    border: none;
-    color: #fff;
-    margin-top: 20px;
-    font-size: 25px;
-    border-radius: 5px;
-
-}
-@media(max-width:650px) {
-    .bubble {
-        width: 350px; 
-        height: 200px; }
-    .Personagem{height: 350px;}
-    .selectEmogi,
-    .btnSub{width:350px;}
+    height: 80px;
+    border: 1px solid #261738;
+    padding: 5px;
+    border-radius: 15px;
     
 }
-@media(max-width:350px) {
-    .bubble {
-        width: 250px; 
-        height: 150px; }
-    .Personagem{height: 250px;}
-    .selectEmogi,
-    .btnSub{width:250px;}
-    
-}
-.emoti {
-    width: 50px;
+
+.fade{
+    border: 4px solid #36c936;
+    border-inline: black;
+    transition: .4s;
+    animation: fade .4s ease-in-out;
+    position: relative;
+    border-radius: 15px;
+  }
+  .comemoracao{
+    position: absolute;
+    top: 0;
+    left: 35px;
     height: 50px;
-    cursor: pointer;
-    transition: border 0.3s ease;
   }
-  
-  .selected {
-    border: 2px solid #123E5F; /* Cor da borda igual à do botão */
-    border-radius: 50%;
+  .comemoracaoFalse{
+    display: none;
   }
-  .btnSub {
-  background-color: #007bff; /* Cor original */
-  border: none;
-  color: white;
-  padding: 10px 20px;
-  font-size: 16px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
 
-.btnSub:disabled {
-  cursor: not-allowed;
-}
 
-.btnClicked {
-  background-color: #fff;
-  border: 2px solid #007bff;
-  color: #007bff;
-}
 
-.spinner {
-    border: 4px solid rgba(0, 0, 0, 0.1);
-    border-left-color: #007bff;
-    border-radius: 50%;
-    width: 24px;
-    height: 24px;
-    animation: spin 1s linear infinite;
-    display: inline-block;
-    margin-right: 10px;
-  }
-  
-  @keyframes spin {
-    0% {
-      transform: rotate(0deg);
+  @keyframes fade {
+      from{
+          opacity: 0;
+          transform: scale(0.9);
     }
-    100% {
-      transform: rotate(360deg);
+    to{
+      opacity: 1;
+      transform: scale(1);
     }
-  }
-  
+}
+

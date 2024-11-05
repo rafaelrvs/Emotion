@@ -1,27 +1,112 @@
 .container {
   display: flex;
+  height: 100vh;
+  flex-direction: column;
   justify-content: center;
   align-items: center;
-  height: 100vh;
-  padding: 20px;
+  background-color: #eeee;
+  color: #5b55cc;
 }
 
 .subContainer {
-  display: grid;
-  grid-template-columns: 2fr 1fr;
-  gap: 20px;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 15px;
+
+  width: 90vw;
+
+
+  border: 3px solid#5b55cc;
+}
+
+.h2Ranking {
+  position: absolute;
+  top: 5%;
+  left: 20%;
+  transform: translate(-50%, -50%);
+  font-size: 4rem;
+
+}
+
+.containerRanking {
+  display: flex;
+  gap: 15px;
+  margin-bottom: 50px;
+  height: 50%;
+  
+}
+
+.containerRanking>.emojiWrapper:nth-child(2) {
+  margin-top: -60px;
+
+}
+
+.containerGraficoEmoti {
+  display: flex;
+ flex-direction: column;
+ align-self: flex-end;
+ 
+
+  width: 100%;
+  
+  
+
+
+}
+
+.itemContainerRanking {
+  text-align: center;
+  width: 100%;
+
+}
+
+.ranking {
+  height: 50px;
+}
+
+.emoti {
+
+  background-color: #5b55cc;
+  margin-bottom: 15px;
+
+
+}
+
+.emojiWrapper {
+  color: #EFEFEF;
+  background-color: #5b55cc;
+  width: 450px;
+  font-size: 1.5rem;
+  padding: 15px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
   align-items: center;
 }
 
-.characterImage {
-  max-height: 100%;
-  width: auto;
+.containerGrafico {
+  display: flex;
+  height: 100%;
+  justify-content: center;
+  align-items: flex-end;
+  width: 100%;
+}
+
+.chart{
+  width: 800px;
+  font-size: 1.8rem;
+}
+
+.containerRobo{
+  padding: 20px;
 }
 
 .messageBox {
   position: relative;
   width: 500px;
-  height: 150px;
+  height: 350px;
   padding: 15px;
   border:3px solid #004080;
   color: #ffffff;
@@ -31,7 +116,12 @@
 }
 
 .messageText {
-  font-size: 1.2rem;
+  font-size: 1.6rem;
+  display: flex;
+  align-items: center;
+  color: #004080;
+  overflow-y:scroll ;
+  height: 100%;
 }
 
 /* Triângulo do balão de conversa */
@@ -44,50 +134,4 @@
   border-left: 15px solid transparent;
   border-right: 15px solid transparent;
   border-top: 15px solid #004080;
-}
-
-.h2Ranking {
-  margin-bottom: 25px;
-}
-
-.containerRanking {
-  display: flex;
-  align-items: flex-end;
-  height: 100%;
-  gap: 20px;
-  width: 100%;
-}
-
-.emojiWrapper {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-}
-
-.emojiWrapper span {
-  font-size: 2rem;
-}
-
-.bar {
-  background-color: #123E5F;
-  width: 250px;
-  margin-top: 5px;
-}
-
-.bar1 {
-  height: 50px;
-}
-
-.bar2 {
-  height: 150px;
-}
-
-.bar3 {
-  height: 100px;
-}
-
-.ranking {
-  margin-top: 5px;
-  font-weight: bold;
 }

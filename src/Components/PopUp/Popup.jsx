@@ -1,7 +1,8 @@
 import styles from"./Popup.module.css"
 import React from 'react'
-export const Popup = ({emocao,setImagemEscolhida}) => {
-    console.log(emocao);
+export const Popup = ({emocao,setImagemEscolhida,emocaoID}) => {
+
+ 
     
 
   return (

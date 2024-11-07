@@ -1,0 +1,93 @@
+.container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  padding: 20px;
+}
+
+.subContainer {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 20px;
+  align-items: center;
+}
+
+.characterImage {
+  max-height: 100%;
+  width: auto;
+}
+
+.messageBox {
+  position: relative;
+  width: 500px;
+  height: 150px;
+  padding: 15px;
+  border:3px solid #004080;
+  color: #ffffff;
+  border-radius: 10px;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.messageText {
+  font-size: 1.2rem;
+}
+
+/* Triângulo do balão de conversa */
+.triangle {
+  position: absolute;
+  bottom: -15px;
+  right: 10%;
+  width: 0;
+  height: 0;
+  border-left: 15px solid transparent;
+  border-right: 15px solid transparent;
+  border-top: 15px solid #004080;
+}
+
+.h2Ranking {
+  margin-bottom: 25px;
+}
+
+.containerRanking {
+  display: flex;
+  align-items: flex-end;
+  height: 100%;
+  gap: 20px;
+  width: 100%;
+}
+
+.emojiWrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.emojiWrapper span {
+  font-size: 2rem;
+}
+
+.bar {
+  background-color: #123E5F;
+  width: 250px;
+  margin-top: 5px;
+}
+
+.bar1 {
+  height: 50px;
+}
+
+.bar2 {
+  height: 150px;
+}
+
+.bar3 {
+  height: 100px;
+}
+
+.ranking {
+  margin-top: 5px;
+  font-weight: bold;
+}

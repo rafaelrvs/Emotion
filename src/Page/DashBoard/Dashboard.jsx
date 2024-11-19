@@ -93,8 +93,8 @@ export const Dashboard = () => {
       const valorPrompt = ranking.map((item) => `${item.count} votos para ${item.nome}`);
       const prompt = `De acordo com o ranking, como estão os colaboradores de minha empresa? Defina pela quantidade de votos: ${valorPrompt}`;
 
-      const geminiResponseText = await fetchGeminiChatResponse(prompt);
-      setGeminiResponse(geminiResponseText);
+      //const geminiResponseText = await fetchGeminiChatResponse(prompt);
+      //setGeminiResponse(geminiResponseText);
 
       if (ranking.length > 1) {
         [ranking[0], ranking[1]] = [ranking[1], ranking[0]];

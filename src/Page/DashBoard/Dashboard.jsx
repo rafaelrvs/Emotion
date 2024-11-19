@@ -13,7 +13,6 @@ export const Dashboard = () => {
 
   // **WebSocket**
   useEffect(() => {
-    // Determina o protocolo correto com base no ambiente
     const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
     const socket = new WebSocket(`${protocol}//clima.amalfis.com.br:8000`); // Conexão com o WebSocket
 
@@ -25,15 +24,7 @@ export const Dashboard = () => {
     // Evento de recebimento de mensagens
     socket.onmessage = async (event) => {
       try {
-        let data;
-
-        if (event.data instanceof Blob) {
-          const text = await event.data.text(); // Converte o Blob em texto
-          data = JSON.parse(text);
-        } else {
-          data = JSON.parse(event.data); // Parse direto se não for Blob
-        }
-
+        const data = JSON.parse(event.data); // Parse direto se não for Blob
         console.log('Dados recebidos do WebSocket:', data);
 
         // Atualiza o estado `emocaoData` com os novos dados
@@ -54,34 +45,32 @@ export const Dashboard = () => {
     return () => socket.close();
   }, []);
 
- // **Atualização de Dados em Tempo Real**
- useEffect(() => {
-  const verificaMaisVotados = (data) => {
-    const contagem = data.reduce((acc, item) => {
-      acc[item.sentimento_id] = (acc[item.sentimento_id] || 0) + 1; // Conta votos por sentimento_id
-      return acc;
-    }, {});
+  // **Atualização de Dados em Tempo Real**
+  useEffect(() => {
+    const verificaMaisVotados = (data) => {
+      const contagem = data.reduce((acc, item) => {
+        acc[item.sentimento_id] = (acc[item.sentimento_id] || 0) + 1; // Conta votos por sentimento_id
+        return acc;
+      }, {});
 
-    const ordenadoPorFrequencia = Object.entries(contagem)
-      .sort((a, b) => b[1] - a[1]) // Ordena pelo número de votos
-      .slice(0, 3); // Seleciona os 3 mais votados
+      const ordenadoPorFrequencia = Object.entries(contagem)
+        .sort((a, b) => b[1] - a[1]) // Ordena pelo número de votos
+        .slice(0, 3); // Seleciona os 3 mais votados
 
-    const ranking = ordenadoPorFrequencia.map(([sentimento_id, count]) => {
-      const emocao = emotiOptionList.find((item) => item.id === sentimento_id);
-      return {
-        nome: emocao ? emocao.emocao : 'Indefinido',
-        url: emocao ? emocao.url : '',
-        count,
-      };
-    });
+      const ranking = ordenadoPorFrequencia.map(([sentimento_id, count]) => {
+        const emocao = emotiOptionList.find((item) => item.id === sentimento_id);
+        return {
+          nome: emocao ? emocao.emocao : 'Indefinido',
+          url: emocao ? emocao.url : '',
+          count,
+        };
+      });
 
-    setRankingEmocoes(ranking);
-  };
+      setRankingEmocoes(ranking);
+    };
 
-  // Atualizar rankings e gráficos
-  verificaMaisVotados(emocaoData);
-}, [emocaoData]);
-
+    verificaMaisVotados(emocaoData);
+  }, [emocaoData]);
 
   // **Inicialização e Atualização Periódica**
   useEffect(() => {
@@ -91,7 +80,7 @@ export const Dashboard = () => {
         const data = await response.json();
 
         // Filtra dados por data de hoje
-        const today = new Date().toISOString().split('T')[0]; // Formato YYYY-MM-DD
+        const today = new Date().toISOString().split('T')[0];
         const filteredData = data.filter((item) => {
           const itemDate = new Date(item.createdAt).toISOString().split('T')[0];
           return itemDate === today;
@@ -103,43 +92,11 @@ export const Dashboard = () => {
       }
     };
 
-    fetchData(); // Busca inicial
+    fetchData();
     const intervalId = setInterval(fetchData, 43200000); // Atualiza a cada 12 horas
 
     return () => clearInterval(intervalId); // Limpa o intervalo ao desmontar
   }, []);
-
-  // **Requisição ao Gemini AI**
-  async function fetchGeminiChatResponse(userMessage) {
-    const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY); // Configuração do modelo
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-
-    const chat = model.startChat({
-      history: [
-        {
-          role: 'user',
-          parts: [{ text: userMessage }],
-        },
-        {
-          role: 'model',
-          parts: [{ text: "Você é um analista de sentimentos e deve analisar qual é o sentimento da empresa e responder em uma linha" }],
-        },
-      ],
-      generationConfig: {
-        maxOutputTokens: 100,
-      },
-    });
-
-    try {
-      const result = await chat.sendMessage(userMessage);
-      const response = await result.response;
-      const text = response.text();
-      return text; // Retorna a resposta do Gemini
-    } catch (error) {
-      console.error("Erro ao buscar dados do Gemini:", error.message);
-      return "Erro ao gerar resposta.";
-    }
-  }
 
   // **Preparação dos Dados para os Gráficos**
   const graphData = emocaoData.reduce((acc, item) => {
@@ -149,33 +106,6 @@ export const Dashboard = () => {
     }
     return acc;
   }, {});
-
-   // **Inicialização e Atualização Periódica**
-   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const response = await fetch('https://clima.amalfis.com.br/api/usuario_emocao');
-        const data = await response.json();
-
-        // Filtra dados por data de hoje
-        const today = new Date().toISOString().split('T')[0]; // Formato YYYY-MM-DD
-        const filteredData = data.filter((item) => {
-          const itemDate = new Date(item.createdAt).toISOString().split('T')[0];
-          return itemDate === today;
-        });
-
-        setEmocaoData(filteredData); // Atualiza o estado com os dados filtrados
-      } catch (error) {
-        console.error('Erro ao buscar os dados:', error);
-      }
-    };
-
-    fetchData(); // Busca inicial
-    const intervalId = setInterval(fetchData, 43200000); // Atualiza a cada 12 horas
-
-    return () => clearInterval(intervalId); // Limpa o intervalo ao desmontar
-  }, []);
-
 
   const chartData = Object.entries(graphData).map(([name, count]) => ({ name, count }));
   const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8A2BE2', '#FF6347'];
@@ -188,7 +118,6 @@ export const Dashboard = () => {
       <div className={styles.subContainer}>
         <h2 className={styles.h2Ranking}>Ranking de sentimentos</h2>
         <div className={styles.containerGraficoEmoti}>
-          {/* Renderização dos Rankings */}
           <div className={styles.containerRanking}>
             {rankingEmocoes.map((item, index) => (
               <div
@@ -205,8 +134,6 @@ export const Dashboard = () => {
               </div>
             ))}
           </div>
-
-          {/* Renderização dos Gráficos */}
           <div className={styles.containerGrafico}>
             <div className={styles.chart1}>
               <BarChart width={900} height={300} data={chartData}>
@@ -218,7 +145,6 @@ export const Dashboard = () => {
                 <Bar dataKey="count" fill="#5b55cc" />
               </BarChart>
             </div>
-
             <div className={styles.chart}>
               <PieChart width={900} height={450}>
                 <Pie
@@ -240,8 +166,6 @@ export const Dashboard = () => {
             </div>
           </div>
         </div>
-
-        {/* Mensagem do Gemini */}
         <div className={styles.containerRobo}>
           <div className={styles.messageBox}>
             <p className={styles.messageText}>{geminiResponse}</p>

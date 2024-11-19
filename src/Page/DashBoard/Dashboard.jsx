@@ -13,7 +13,7 @@ export const Dashboard = () => {
 
   // **WebSocket**
   useEffect(() => {
-    const socket = new WebSocket('wss://clima.amalfis.com.br/ws/'); // Conexão com o WebSocket
+    const socket = new WebSocket('wss://clima.amalfis.com.br:8000'); // Conexão com o WebSocket
 
     // Evento de conexão aberta
     socket.onopen = () => {

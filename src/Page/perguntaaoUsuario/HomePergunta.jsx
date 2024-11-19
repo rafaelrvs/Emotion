@@ -14,7 +14,7 @@ export const HomePergunta = () => {
 
   const fetchData = () => {
     if (emocaoID) {
-      axios.post('http://localhost:8080/api/usuario_emocao', { sentimento_id: emocaoID })
+      axios.post('https://clima.amalfis.com.br:8080/api/usuario_emocao', { sentimento_id: emocaoID })
         .then(response => {
           setEmocaoData(response.data);
           console.log(response.data);

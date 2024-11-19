@@ -13,8 +13,10 @@ export const HomePergunta = () => {
   const [emocaoID, setEmocaoID] = useState("");
 
   const fetchData = () => {
+    console.log(emocaoID);
+    
     if (emocaoID) {
-      axios.post('https://clima.amalfis.com.br:8080/api/usuario_emocao', { sentimento_id: emocaoID })
+      axios.post('https://clima.amalfis.com.br/api/usuario_emocao', { sentimento_id: emocaoID })
         .then(response => {
           setEmocaoData(response.data);
           console.log(response.data);

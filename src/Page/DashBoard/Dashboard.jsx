@@ -50,7 +50,7 @@ export const Dashboard = () => {
 
     const fetchData = async () => {
       try {
-        const response = await fetch('https://clima.amalfis.com.br:8080/api/usuario_emocao');
+        const response = await fetch('https://clima.amalfis.com.br/api/usuario_emocao');
         const data = await response.json();
 
         // Filtrar os dados para incluir apenas aqueles com data de hoje

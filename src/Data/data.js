@@ -14,5 +14,6 @@ const emotiOptionList= [
     { id: "b3170989-3d8a-41da-b8e2-e88d7d789511", emocao: "Orgulhoso", url: "/public/emogi/Orgulhoso.png" },
     { id: "cbb0e432-a003-45f9-987d-de0b50db01e8", emocao: "Surpreso", url: "/public/emogi/Surpreso.png" },
     { id: "f8de978a-0b1e-4f2d-bcd5-ab66dd757a2f", emocao: "Triste", url: "/public/emogi/triste.png" }
+    
 ];
   export default  emotiOptionList

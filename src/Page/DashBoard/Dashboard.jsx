@@ -12,7 +12,7 @@ export const Dashboard = () => {
   const [bdState, setBdState] = useState(null);
  
   useEffect(() => {
-    const socket = new WebSocket('ws://localhost:8000'); // Inicializa o WebSocket
+    const socket = new WebSocket('wss://clima.amalfis.com.br:8000');
   
     socket.onopen = () => {
       console.log('Conectado ao WebSocket');

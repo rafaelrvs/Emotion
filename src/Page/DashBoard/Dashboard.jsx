@@ -12,7 +12,8 @@ export const Dashboard = () => {
   const [bdState, setBdState] = useState(null);
  
   useEffect(() => {
-    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+
+    const protocol = 'ws:';
     const socket = new WebSocket(`${protocol}//clima.amalfis.com.br:8000`);
   
     socket.onopen = () => {
@@ -48,7 +49,6 @@ export const Dashboard = () => {
 
   
   useEffect(() => {
-
     const fetchData = async () => {
       try {
         const response = await fetch('https://clima.amalfis.com.br/api/usuario_emocao');
@@ -139,7 +139,7 @@ export const Dashboard = () => {
     }
   }
 
-  // Lógica para gráficos e renderização permanece a mesma...
+  // Lógica para gráficos e renderização 
   const graphData = emocaoData.reduce((acc, item) => {
     const emocao = emotiOptionList.find(e => e.id === item.sentimento_id);
     if (emocao) {

@@ -12,9 +12,9 @@ export const Dashboard = () => {
   const [bdState, setBdState] = useState(null);
  
   useEffect(() => {
-
-    const protocol = 'ws:';
-    const socket = new WebSocket(`${protocol}//clima.amalfis.com.br:8000`);
+    
+    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+    const socket = new WebSocket(`${protocol}//clima.amalfis.com.br/ws/`);
   
     socket.onopen = () => {
       console.log('Conectado ao WebSocket');

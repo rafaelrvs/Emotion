@@ -13,7 +13,9 @@ export const Dashboard = () => {
 
   // **WebSocket**
   useEffect(() => {
-    const socket = new WebSocket('ws://clima.amalfis.com.br:8000'); // Conexão com o WebSocket
+    // Determina o protocolo correto com base no ambiente
+    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+    const socket = new WebSocket(`${protocol}//clima.amalfis.com.br:8000`); // Conexão com o WebSocket
 
     // Evento de conexão aberta
     socket.onopen = () => {
@@ -52,47 +54,34 @@ export const Dashboard = () => {
     return () => socket.close();
   }, []);
 
-  // **Atualização de Dados em Tempo Real**
-  useEffect(() => {
-    const verificaMaisVotados = (data) => {
-      const contagem = data.reduce((acc, item) => {
-        acc[item.sentimento_id] = (acc[item.sentimento_id] || 0) + 1; // Conta votos por sentimento_id
-        return acc;
-      }, {});
-
-      const ordenadoPorFrequencia = Object.entries(contagem)
-        .sort((a, b) => b[1] - a[1]) // Ordena pelo número de votos
-        .slice(0, 3); // Seleciona os 3 mais votados
-
-      const ranking = ordenadoPorFrequencia.map(([sentimento_id, count]) => {
-        const emocao = emotiOptionList.find((item) => item.id === sentimento_id);
-        return {
-          nome: emocao ? emocao.emocao : 'Indefinido',
-          url: emocao ? emocao.url : '',
-          count,
-        };
-      });
-
-      setRankingEmocoes(ranking);
-    };
-
-    // Processar dados para gráficos
-    const graphData = emocaoData.reduce((acc, item) => {
-      const emocao = emotiOptionList.find((e) => e.id === item.sentimento_id);
-      if (emocao) {
-        acc[emocao.emocao] = (acc[emocao.emocao] || 0) + 1; // Conta emoções para os gráficos
-      }
+ // **Atualização de Dados em Tempo Real**
+ useEffect(() => {
+  const verificaMaisVotados = (data) => {
+    const contagem = data.reduce((acc, item) => {
+      acc[item.sentimento_id] = (acc[item.sentimento_id] || 0) + 1; // Conta votos por sentimento_id
       return acc;
     }, {});
 
-    const chartData = Object.entries(graphData).map(([name, count]) => ({
-      name,
-      count,
-    }));
+    const ordenadoPorFrequencia = Object.entries(contagem)
+      .sort((a, b) => b[1] - a[1]) // Ordena pelo número de votos
+      .slice(0, 3); // Seleciona os 3 mais votados
 
-    // Atualizar rankings e gráficos
-    verificaMaisVotados(emocaoData);
-  }, [emocaoData]);
+    const ranking = ordenadoPorFrequencia.map(([sentimento_id, count]) => {
+      const emocao = emotiOptionList.find((item) => item.id === sentimento_id);
+      return {
+        nome: emocao ? emocao.emocao : 'Indefinido',
+        url: emocao ? emocao.url : '',
+        count,
+      };
+    });
+
+    setRankingEmocoes(ranking);
+  };
+
+  // Atualizar rankings e gráficos
+  verificaMaisVotados(emocaoData);
+}, [emocaoData]);
+
 
   // **Inicialização e Atualização Periódica**
   useEffect(() => {
@@ -160,6 +149,33 @@ export const Dashboard = () => {
     }
     return acc;
   }, {});
+
+   // **Inicialização e Atualização Periódica**
+   useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await fetch('https://clima.amalfis.com.br/api/usuario_emocao');
+        const data = await response.json();
+
+        // Filtra dados por data de hoje
+        const today = new Date().toISOString().split('T')[0]; // Formato YYYY-MM-DD
+        const filteredData = data.filter((item) => {
+          const itemDate = new Date(item.createdAt).toISOString().split('T')[0];
+          return itemDate === today;
+        });
+
+        setEmocaoData(filteredData); // Atualiza o estado com os dados filtrados
+      } catch (error) {
+        console.error('Erro ao buscar os dados:', error);
+      }
+    };
+
+    fetchData(); // Busca inicial
+    const intervalId = setInterval(fetchData, 43200000); // Atualiza a cada 12 horas
+
+    return () => clearInterval(intervalId); // Limpa o intervalo ao desmontar
+  }, []);
+
 
   const chartData = Object.entries(graphData).map(([name, count]) => ({ name, count }));
   const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8A2BE2', '#FF6347'];

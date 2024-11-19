@@ -6,7 +6,7 @@ import emotiOptionList from '@/data/data.js';
 
 
 export const HomePergunta = () => {
-  const logo = "/public/icons/logo preto.png";
+  const logo = "/icons/logo preto.png";
   const [imagemEscolhida, setImagemEscolhida] = useState("");
   const [animacao, setAnimacao] = useState(false);
   const [emocaoData, setEmocaoData] = useState([]);
@@ -56,7 +56,7 @@ export const HomePergunta = () => {
                 onClick={() => handleClick(emoti)} 
               />
               {animacao && (
-                <img className={styles.comemoracao} src="public/icons/confete.gif" alt="comemoração" />
+                <img className={styles.comemoracao} src="/icons/confete.gif" alt="comemoração" />
               )}
               <p>{emoti.emocao}</p>
             </div>

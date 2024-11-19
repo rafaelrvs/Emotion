@@ -2,7 +2,6 @@ import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import path from 'path';
 
-// https://vitejs.dev/config/
 export default defineConfig({
   plugins: [react()],
   server: {
@@ -11,10 +10,20 @@ export default defineConfig({
   },
   resolve: {
     alias: {
-      '@': path.resolve(__dirname, './src'), // Adiciona alias '@' para a pasta src
+      '@': path.resolve(__dirname, './src'),
     },
   },
   build: {
-    assetsInclude: [/\.(png|gif)$/], // Inclui arquivos .png e .gif no build
+    assetsInclude: [/\.(png|gif)$/], // Inclui arquivos de imagens no build
+    rollupOptions: {
+      output: {
+        assetFileNames: (assetInfo) => {
+          if (/\.(png|gif)$/.test(assetInfo.name)) {
+            return 'emogi/[name]-[hash][extname]'; // Garante que imagens vão para a pasta correta
+          }
+          return 'assets/[name]-[hash][extname]';
+        },
+      },
+    },
   },
 });

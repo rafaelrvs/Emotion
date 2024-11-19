@@ -14,4 +14,7 @@ export default defineConfig({
       '@': path.resolve(__dirname, './src'), // Adiciona alias '@' para a pasta src
     },
   },
+  build: {
+    assetsInclude: [/\.(png|gif)$/], // Inclui arquivos .png e .gif no build
+  },
 });

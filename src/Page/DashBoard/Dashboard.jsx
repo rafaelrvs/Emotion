@@ -1,113 +1,128 @@
 import React, { useEffect, useState } from 'react';
-import { GoogleGenerativeAI } from "@google/generative-ai"; 
-import styles from './Dashboard.module.css';
-import emotiOptionList from '@/data/data.js';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, PieChart, Pie, Cell } from 'recharts';
-
+import { GoogleGenerativeAI } from "@google/generative-ai"; // Biblioteca para interagir com o Gemini AI
+import styles from './Dashboard.module.css'; // Estilo específico para o componente
+import emotiOptionList from '@/data/data.js'; // Lista de opções de emoções
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, PieChart, Pie, Cell } from 'recharts'; // Biblioteca para gráficos
 
 export const Dashboard = () => {
-  const [emocaoData, setEmocaoData] = useState([]);
-  const [rankingEmocoes, setRankingEmocoes] = useState([]);
-  const [geminiResponse, setGeminiResponse] = useState("");
-  const [bdState, setBdState] = useState(null);
- 
+  // **Estados**
+  const [emocaoData, setEmocaoData] = useState([]); // Dados de emoções recebidos
+  const [rankingEmocoes, setRankingEmocoes] = useState([]); // Ranking das emoções
+  const [geminiResponse, setGeminiResponse] = useState(""); // Resposta gerada pelo modelo Gemini AI
+  const [bdState, setBdState] = useState(null); // Estado intermediário para dados recebidos em tempo real
+
+  // **WebSocket**
   useEffect(() => {
-    const socket = new WebSocket('wss://clima.amalfis.com.br:8000');
-  
+    const socket = new WebSocket('wss://clima.amalfis.com.br/ws/'); // Conexão com o WebSocket
+
+    // Evento de conexão aberta
     socket.onopen = () => {
       console.log('Conectado ao WebSocket');
     };
-  
+
+    // Evento de recebimento de mensagens
     socket.onmessage = async (event) => {
       try {
         let data;
-    
+
         if (event.data instanceof Blob) {
-            const text = await event.data.text(); // Converte o Blob em texto
-            data = JSON.parse(text); 
-            setBdState(data)
-   
+          const text = await event.data.text(); // Converte o Blob em texto
+          data = JSON.parse(text);
         } else {
-            data = JSON.parse(event.data); // Parse direto se não for Blob
+          data = JSON.parse(event.data); // Parse direto se não for Blob
         }
-        
-        console.log('Dados recebidos:', data);
-        // Atualize o estado para exibir os dados em tempo real, se necessário
+
+        console.log('Dados recebidos do WebSocket:', data);
+
+        // Atualiza o estado `emocaoData` com os novos dados
+        if (data.type === 'novo_cadastro') {
+          setEmocaoData((prevData) => [...prevData, data.data]);
+        }
       } catch (error) {
         console.error('Erro ao processar dados do WebSocket:', error);
       }
     };
-  
+
+    // Evento de conexão fechada
     socket.onclose = () => {
       console.log('Conexão WebSocket fechada');
     };
-  
-    return () => socket.close(); // Fecha o WebSocket ao desmontar o componente
+
+    // Fecha o WebSocket quando o componente for desmontado
+    return () => socket.close();
   }, []);
 
-  
+  // **Atualização de Dados em Tempo Real**
   useEffect(() => {
+    const verificaMaisVotados = (data) => {
+      const contagem = data.reduce((acc, item) => {
+        acc[item.sentimento_id] = (acc[item.sentimento_id] || 0) + 1; // Conta votos por sentimento_id
+        return acc;
+      }, {});
 
+      const ordenadoPorFrequencia = Object.entries(contagem)
+        .sort((a, b) => b[1] - a[1]) // Ordena pelo número de votos
+        .slice(0, 3); // Seleciona os 3 mais votados
+
+      const ranking = ordenadoPorFrequencia.map(([sentimento_id, count]) => {
+        const emocao = emotiOptionList.find((item) => item.id === sentimento_id);
+        return {
+          nome: emocao ? emocao.emocao : 'Indefinido',
+          url: emocao ? emocao.url : '',
+          count,
+        };
+      });
+
+      setRankingEmocoes(ranking);
+    };
+
+    // Processar dados para gráficos
+    const graphData = emocaoData.reduce((acc, item) => {
+      const emocao = emotiOptionList.find((e) => e.id === item.sentimento_id);
+      if (emocao) {
+        acc[emocao.emocao] = (acc[emocao.emocao] || 0) + 1; // Conta emoções para os gráficos
+      }
+      return acc;
+    }, {});
+
+    const chartData = Object.entries(graphData).map(([name, count]) => ({
+      name,
+      count,
+    }));
+
+    // Atualizar rankings e gráficos
+    verificaMaisVotados(emocaoData);
+  }, [emocaoData]);
+
+  // **Inicialização e Atualização Periódica**
+  useEffect(() => {
     const fetchData = async () => {
       try {
         const response = await fetch('https://clima.amalfis.com.br/api/usuario_emocao');
         const data = await response.json();
 
-        // Filtrar os dados para incluir apenas aqueles com data de hoje
+        // Filtra dados por data de hoje
         const today = new Date().toISOString().split('T')[0]; // Formato YYYY-MM-DD
-        const filteredData = data.filter(item => {
-          const itemDate = new Date(item.createdAt).toISOString().split('T')[0]; // Certifique-se de que `createdAt` é a chave correta para a data
+        const filteredData = data.filter((item) => {
+          const itemDate = new Date(item.createdAt).toISOString().split('T')[0];
           return itemDate === today;
         });
 
-        setEmocaoData(filteredData);
-        verificaMaisVotados(filteredData);
+        setEmocaoData(filteredData); // Atualiza o estado com os dados filtrados
       } catch (error) {
         console.error('Erro ao buscar os dados:', error);
       }
     };
 
-    const verificaMaisVotados = async (data) => {
-      const contagem = data.reduce((acc, item) => {
-        acc[item.sentimento_id] = (acc[item.sentimento_id] || 0) + 1;
-        return acc;
-      }, {});
-
-      const ordenadoPorFrequencia = Object.entries(contagem)
-        .sort((a, b) => b[1] - a[1])
-        .slice(0, 3);
-
-      const ranking = ordenadoPorFrequencia.map(([sentimento_id, count]) => {
-        const emocao = emotiOptionList.find(item => item.id === sentimento_id);
-        return {
-          nome: emocao ? emocao.emocao : "Indefinido",
-          url: emocao ? emocao.url : "",
-          count
-        };
-      });
-
-      const valorPrompt = ranking.map((item) => { return (item.count + " votos para " + item.nome) });
-      const prompt = `De acordo com o ranking, como estão os colaboradores de minha empresa? Defina pela quantidade de votos: ${valorPrompt}`;
-
-      const geminiResponseText = await fetchGeminiChatResponse(prompt);
-      setGeminiResponse(geminiResponseText);
-
-      if (ranking.length > 1) {
-        [ranking[0], ranking[1]] = [ranking[1], ranking[0]];
-      }
-
-      setRankingEmocoes(ranking);
-    };
-
-    fetchData();
+    fetchData(); // Busca inicial
     const intervalId = setInterval(fetchData, 43200000); // Atualiza a cada 12 horas
 
-    return () => clearInterval(intervalId);
-  }, [bdState]);
+    return () => clearInterval(intervalId); // Limpa o intervalo ao desmontar
+  }, []);
 
-  // Função para iniciar uma conversa com o modelo Gemini
+  // **Requisição ao Gemini AI**
   async function fetchGeminiChatResponse(userMessage) {
-    const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY); 
+    const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY); // Configuração do modelo
     const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
     const chat = model.startChat({
@@ -130,17 +145,16 @@ export const Dashboard = () => {
       const result = await chat.sendMessage(userMessage);
       const response = await result.response;
       const text = response.text();
-      console.log(text);
-      return text;
+      return text; // Retorna a resposta do Gemini
     } catch (error) {
       console.error("Erro ao buscar dados do Gemini:", error.message);
       return "Erro ao gerar resposta.";
     }
   }
 
-  // Lógica para gráficos e renderização permanece a mesma...
+  // **Preparação dos Dados para os Gráficos**
   const graphData = emocaoData.reduce((acc, item) => {
-    const emocao = emotiOptionList.find(e => e.id === item.sentimento_id);
+    const emocao = emotiOptionList.find((e) => e.id === item.sentimento_id);
     if (emocao) {
       acc[emocao.emocao] = (acc[emocao.emocao] || 0) + 1;
     }
@@ -152,11 +166,13 @@ export const Dashboard = () => {
 
   const renderCustomizedLabel = ({ percent, name }) => `${name}: ${(percent * 100).toFixed(0)}%`;
 
+  // **Renderização do Componente**
   return (
     <div className={styles.container}>
       <div className={styles.subContainer}>
         <h2 className={styles.h2Ranking}>Ranking de sentimentos</h2>
         <div className={styles.containerGraficoEmoti}>
+          {/* Renderização dos Rankings */}
           <div className={styles.containerRanking}>
             {rankingEmocoes.map((item, index) => (
               <div
@@ -174,6 +190,7 @@ export const Dashboard = () => {
             ))}
           </div>
 
+          {/* Renderização dos Gráficos */}
           <div className={styles.containerGrafico}>
             <div className={styles.chart1}>
               <BarChart width={900} height={300} data={chartData}>
@@ -207,6 +224,8 @@ export const Dashboard = () => {
             </div>
           </div>
         </div>
+
+        {/* Mensagem do Gemini */}
         <div className={styles.containerRobo}>
           <div className={styles.messageBox}>
             <p className={styles.messageText}>{geminiResponse}</p>

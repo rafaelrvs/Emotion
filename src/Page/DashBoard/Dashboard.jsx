@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { GoogleGenerativeAI } from "@google/generative-ai"; 
 import styles from './Dashboard.module.css';
-import emotiOptionList from '../../data/data';
+import emotiOptionList from '@/data/data';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, PieChart, Pie, Cell } from 'recharts';
 
 

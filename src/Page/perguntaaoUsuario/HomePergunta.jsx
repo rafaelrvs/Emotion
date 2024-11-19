@@ -2,7 +2,8 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import styles from "./HomePergunta.module.css";
 import { Popup } from '../../Components/PopUp/Popup';
-import emotiOptionList from '../../data/data.js';
+import emotiOptionList from '@/data/data';
+
 
 export const HomePergunta = () => {
   const logo = "/public/icons/logo preto.png";

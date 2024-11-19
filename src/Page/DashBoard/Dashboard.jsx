@@ -1,18 +1,15 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { GoogleGenerativeAI } from "@google/generative-ai"; 
 import styles from './Dashboard.module.css';
 import emotiOptionList from '@/data/data';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, PieChart, Pie, Cell } from 'recharts';
 
-
 export const Dashboard = () => {
   const [emocaoData, setEmocaoData] = useState([]);
   const [rankingEmocoes, setRankingEmocoes] = useState([]);
   const [geminiResponse, setGeminiResponse] = useState("");
-  const [bdState, setBdState] = useState(null);
- 
+
   useEffect(() => {
-    
     const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
     const socket = new WebSocket(`${protocol}//clima.amalfis.com.br/ws/`);
   
@@ -25,16 +22,17 @@ export const Dashboard = () => {
         let data;
     
         if (event.data instanceof Blob) {
-            const text = await event.data.text(); // Converte o Blob em texto
-            data = JSON.parse(text); 
-            setBdState(data)
-   
+          const text = await event.data.text(); // Converte o Blob em texto
+          data = JSON.parse(text);
         } else {
-            data = JSON.parse(event.data); // Parse direto se não for Blob
+          data = JSON.parse(event.data); // Parse direto se não for Blob
         }
         
         console.log('Dados recebidos:', data);
-        // Atualize o estado para exibir os dados em tempo real, se necessário
+
+        if (data.type === "novo_cadastro" && data.data) {
+          setEmocaoData((prevData) => [...prevData, data.data]); // Atualiza `emocaoData` diretamente
+        }
       } catch (error) {
         console.error('Erro ao processar dados do WebSocket:', error);
       }
@@ -47,7 +45,6 @@ export const Dashboard = () => {
     return () => socket.close(); // Fecha o WebSocket ao desmontar o componente
   }, []);
 
-  
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -62,13 +59,19 @@ export const Dashboard = () => {
         });
 
         setEmocaoData(filteredData);
-        verificaMaisVotados(filteredData);
       } catch (error) {
         console.error('Erro ao buscar os dados:', error);
       }
     };
 
-    const verificaMaisVotados = async (data) => {
+    fetchData();
+    const intervalId = setInterval(fetchData, 43200000); // Atualiza a cada 12 horas
+
+    return () => clearInterval(intervalId);
+  }, []);
+
+  useEffect(() => {
+    const calculaRanking = async (data) => {
       const contagem = data.reduce((acc, item) => {
         acc[item.sentimento_id] = (acc[item.sentimento_id] || 0) + 1;
         return acc;
@@ -87,7 +90,7 @@ export const Dashboard = () => {
         };
       });
 
-      const valorPrompt = ranking.map((item) => { return (item.count + " votos para " + item.nome) });
+      const valorPrompt = ranking.map((item) => `${item.count} votos para ${item.nome}`);
       const prompt = `De acordo com o ranking, como estão os colaboradores de minha empresa? Defina pela quantidade de votos: ${valorPrompt}`;
 
       const geminiResponseText = await fetchGeminiChatResponse(prompt);
@@ -100,55 +103,50 @@ export const Dashboard = () => {
       setRankingEmocoes(ranking);
     };
 
-    fetchData();
-    const intervalId = setInterval(fetchData, 43200000); // Atualiza a cada 12 horas
+    calculaRanking(emocaoData);
+  }, [emocaoData]);
 
-    return () => clearInterval(intervalId);
-  }, [bdState]);
-
-  // Função para iniciar uma conversa com o modelo Gemini
   async function fetchGeminiChatResponse(userMessage) {
     const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY); 
     const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
-    const chat = model.startChat({
-      history: [
-        {
-          role: 'user',
-          parts: [{ text: userMessage }],
-        },
-        {
-          role: 'model',
-          parts: [{ text: "Você é um analista de sentimentos e deve analisar qual é o sentimento da empresa e responder em uma linha" }],
-        },
-      ],
-      generationConfig: {
-        maxOutputTokens: 100,
-      },
-    });
-
     try {
+      const chat = model.startChat({
+        history: [
+          {
+            role: 'user',
+            parts: [{ text: userMessage }],
+          },
+          {
+            role: 'model',
+            parts: [{ text: "Você é um analista de sentimentos e deve analisar qual é o sentimento da empresa e responder em uma linha" }],
+          },
+        ],
+        generationConfig: {
+          maxOutputTokens: 100,
+        },
+      });
+
       const result = await chat.sendMessage(userMessage);
-      const response = await result.response;
-      const text = response.text();
-      console.log(text);
-      return text;
+      return result.response.text();
     } catch (error) {
       console.error("Erro ao buscar dados do Gemini:", error.message);
       return "Erro ao gerar resposta.";
     }
   }
 
-  // Lógica para gráficos e renderização 
-  const graphData = emocaoData.reduce((acc, item) => {
-    const emocao = emotiOptionList.find(e => e.id === item.sentimento_id);
-    if (emocao) {
-      acc[emocao.emocao] = (acc[emocao.emocao] || 0) + 1;
-    }
-    return acc;
-  }, {});
+  const chartData = useMemo(() => {
+    const graphData = emocaoData.reduce((acc, item) => {
+      const emocao = emotiOptionList.find(e => e.id === item.sentimento_id);
+      if (emocao) {
+        acc[emocao.emocao] = (acc[emocao.emocao] || 0) + 1;
+      }
+      return acc;
+    }, {});
 
-  const chartData = Object.entries(graphData).map(([name, count]) => ({ name, count }));
+    return Object.entries(graphData).map(([name, count]) => ({ name, count }));
+  }, [emocaoData]);
+
   const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8A2BE2', '#FF6347'];
 
   const renderCustomizedLabel = ({ percent, name }) => `${name}: ${(percent * 100).toFixed(0)}%`;

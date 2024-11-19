@@ -1,15 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import styles from './Dashboard.module.css';
-import emotiOptionList from '@/data/data.js';
+import emotiOptionList from '@/data/data';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, PieChart, Pie, Cell } from 'recharts';
 
 export const Dashboard = () => {
-  const [emocaoData, setEmocaoData] = useState([]); // Dados de emoções recebidos
-  const [rankingEmocoes, setRankingEmocoes] = useState([]); // Ranking das emoções
-  const [geminiResponse, setGeminiResponse] = useState(""); // Resposta gerada pelo modelo Gemini AI
+  const [emocaoData, setEmocaoData] = useState([]);
+  const [rankingEmocoes, setRankingEmocoes] = useState([]);
+  const [geminiResponse, setGeminiResponse] = useState("");
+  const [bdState, setBdState] = useState(null);
 
-  // **WebSocket**
   useEffect(() => {
     const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
     const socket = new WebSocket(`${protocol}//clima.amalfis.com.br:8000`);
@@ -20,12 +20,15 @@ export const Dashboard = () => {
 
     socket.onmessage = async (event) => {
       try {
-        const data = JSON.parse(event.data);
-        console.log('Dados recebidos do WebSocket:', data);
-
-        if (data.type === 'novo_cadastro') {
-          setEmocaoData((prevData) => [...prevData, data.data]);
+        let data;
+        if (event.data instanceof Blob) {
+          const text = await event.data.text();
+          data = JSON.parse(text);
+        } else {
+          data = JSON.parse(event.data);
         }
+        console.log('Dados recebidos:', data);
+        setBdState(data);
       } catch (error) {
         console.error('Erro ao processar dados do WebSocket:', error);
       }
@@ -38,9 +41,26 @@ export const Dashboard = () => {
     return () => socket.close();
   }, []);
 
-  // **Atualização de Dados em Tempo Real**
   useEffect(() => {
-    const updateRanking = (data) => {
+    const fetchData = async () => {
+      try {
+        const response = await fetch('http://localhost:8080/api/usuario_emocao');
+        const data = await response.json();
+
+        const today = new Date().toISOString().split('T')[0];
+        const filteredData = data.filter(item => {
+          const itemDate = new Date(item.createdAt).toISOString().split('T')[0];
+          return itemDate === today;
+        });
+
+        setEmocaoData(filteredData);
+        processRanking(filteredData);
+      } catch (error) {
+        console.error('Erro ao buscar os dados:', error);
+      }
+    };
+
+    const processRanking = async (data) => {
       const contagem = data.reduce((acc, item) => {
         acc[item.sentimento_id] = (acc[item.sentimento_id] || 0) + 1;
         return acc;
@@ -50,50 +70,52 @@ export const Dashboard = () => {
         .sort((a, b) => b[1] - a[1])
         .slice(0, 3);
 
-      const ranking = ordenadoPorFrequencia.map(([sentimento_id, count], index) => {
-        const emocao = emotiOptionList.find((item) => item.id === sentimento_id);
+      const ranking = ordenadoPorFrequencia.map(([sentimento_id, count]) => {
+        const emocao = emotiOptionList.find(item => item.id === sentimento_id);
         return {
-          nome: emocao ? emocao.emocao : 'Indefinido',
-          url: emocao ? emocao.url : '',
+          nome: emocao?.emocao || "Indefinido",
+          url: emocao?.url || "",
           count,
-          position: index === 0 ? 'center' : index === 1 ? 'right' : 'left', // Define a posição
         };
       });
 
+      const valorPrompt = ranking.map(item => `${item.count} votos para ${item.nome}`).join(", ");
+      const prompt = `De acordo com o ranking, como estão os colaboradores de minha empresa? Defina pela quantidade de votos: ${valorPrompt}`;
+      const geminiResponseText = await fetchGeminiChatResponse(prompt);
+
+      setGeminiResponse(geminiResponseText);
       setRankingEmocoes(ranking);
     };
 
-    updateRanking(emocaoData);
-  }, [emocaoData]);
-
-  // **Busca inicial na API**
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const response = await fetch('https://clima.amalfis.com.br/api/usuario_emocao');
-        const data = await response.json();
-
-        const today = new Date().toISOString().split('T')[0];
-        const filteredData = data.filter((item) => {
-          const itemDate = new Date(item.createdAt).toISOString().split('T')[0];
-          return itemDate === today;
-        });
-
-        setEmocaoData(filteredData);
-      } catch (error) {
-        console.error('Erro ao buscar os dados:', error);
-      }
-    };
-
     fetchData();
-    const intervalId = setInterval(fetchData, 60000); // Atualiza a cada 1 minuto
+    const intervalId = setInterval(fetchData, 43200000);
 
     return () => clearInterval(intervalId);
-  }, []);
+  }, [bdState]);
 
-  // **Preparação dos Dados para os Gráficos**
+  const fetchGeminiChatResponse = async (userMessage) => {
+    const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY);
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+
+    try {
+      const result = await model.startChat({
+        history: [
+          { role: 'user', content: userMessage },
+          { role: 'model', content: "Você é um analista de sentimentos e deve analisar qual é o sentimento da empresa e responder em uma linha" },
+        ],
+        generationConfig: { maxOutputTokens: 100 },
+      });
+
+      const response = await result.response();
+      return response.text();
+    } catch (error) {
+      console.error("Erro ao buscar dados do Gemini:", error.message);
+      return "Erro ao gerar resposta.";
+    }
+  };
+
   const graphData = emocaoData.reduce((acc, item) => {
-    const emocao = emotiOptionList.find((e) => e.id === item.sentimento_id);
+    const emocao = emotiOptionList.find(e => e.id === item.sentimento_id);
     if (emocao) {
       acc[emocao.emocao] = (acc[emocao.emocao] || 0) + 1;
     }
@@ -105,7 +127,6 @@ export const Dashboard = () => {
 
   const renderCustomizedLabel = ({ percent, name }) => `${name}: ${(percent * 100).toFixed(0)}%`;
 
-  // **Renderização do Componente**
   return (
     <div className={styles.container}>
       <div className={styles.subContainer}>
@@ -115,7 +136,7 @@ export const Dashboard = () => {
             {rankingEmocoes.map((item, index) => (
               <div
                 key={index}
-                className={`${styles.emojiWrapper} ${item.position === 'center' ? styles.center : item.position === 'right' ? styles.right : styles.left}`}
+                className={`${styles.emojiWrapper} ${index === 0 ? styles.center : index === 1 ? styles.right : styles.left}`}
               >
                 <div className={styles.itemContainerRanking}>
                   <div className={styles.emoti}>
@@ -127,6 +148,7 @@ export const Dashboard = () => {
               </div>
             ))}
           </div>
+
           <div className={styles.containerGrafico}>
             <div className={styles.chart1}>
               <BarChart width={900} height={300} data={chartData}>
@@ -138,6 +160,7 @@ export const Dashboard = () => {
                 <Bar dataKey="count" fill="#5b55cc" />
               </BarChart>
             </div>
+
             <div className={styles.chart}>
               <PieChart width={900} height={450}>
                 <Pie
@@ -158,13 +181,13 @@ export const Dashboard = () => {
               </PieChart>
             </div>
           </div>
-        </div>
-        <div className={styles.containerRobo}>
-          <div className={styles.messageBox}>
-            <p className={styles.messageText}>{geminiResponse}</p>
-            <div className={styles.triangle}></div>
+          <div className={styles.containerRobo}>
+            <div className={styles.messageBox}>
+              <p className={styles.messageText}>{geminiResponse}</p>
+              <div className={styles.triangle}></div>
+            </div>
+            <img src="/personagem/di.png" alt="personagem" className={styles.characterImage} />
           </div>
-          <img src="/personagem/di.png" alt="personagem" className={styles.characterImage} />
         </div>
       </div>
     </div>

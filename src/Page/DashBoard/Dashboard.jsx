@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useMemo } from 'react';
-import { GoogleGenerativeAI } from "@google/generative-ai"; 
+import { GoogleGenerativeAI } from "@google/generative-ai";
 import styles from './Dashboard.module.css';
 import emotiOptionList from '@/data/data';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, PieChart, Pie, Cell } from 'recharts';
@@ -8,26 +8,52 @@ export const Dashboard = () => {
   const [emocaoData, setEmocaoData] = useState([]);
   const [rankingEmocoes, setRankingEmocoes] = useState([]);
   const [geminiResponse, setGeminiResponse] = useState("");
+  const [messageActive, setMessageActive] = useState(false);
 
+
+
+  
+
+useEffect(()=>{
+
+  if(geminiResponse ===""){
+    setMessageActive(true)
+           
+  }
+  setTimeout(()=>{
+    setMessageActive(true)
+    
+  },15000)
+  setMessageActive(false)
+
+},[emocaoData])
+
+
+
+
+
+  
   useEffect(() => {
     const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
     const socket = new WebSocket(`${protocol}//clima.amalfis.com.br/ws/`);
-  
+
     socket.onopen = () => {
       console.log('Conectado ao WebSocket');
     };
-  
+
+
+
     socket.onmessage = async (event) => {
       try {
         let data;
-    
+
         if (event.data instanceof Blob) {
           const text = await event.data.text(); // Converte o Blob em texto
           data = JSON.parse(text);
         } else {
           data = JSON.parse(event.data); // Parse direto se não for Blob
         }
-        
+
         console.log('Dados recebidos:', data);
 
         if (data.type === "novo_cadastro" && data.data) {
@@ -37,11 +63,11 @@ export const Dashboard = () => {
         console.error('Erro ao processar dados do WebSocket:', error);
       }
     };
-  
+
     socket.onclose = () => {
       console.log('Conexão WebSocket fechada');
     };
-  
+
     return () => socket.close(); // Fecha o WebSocket ao desmontar o componente
   }, []);
 
@@ -90,11 +116,11 @@ export const Dashboard = () => {
         };
       });
 
-      const valorPrompt = ranking.map((item) => `${item.count} votos para ${item.nome}`);
-      const prompt = `De acordo com o ranking, como estão os colaboradores de minha empresa? Defina pela quantidade de votos: ${valorPrompt}`;
+      if (ranking === ranking) {
 
-      //const geminiResponseText = await fetchGeminiChatResponse(prompt);
-      //setGeminiResponse(geminiResponseText);
+        setGeminiResponse("Esse é o clima organizacional")
+        
+      }
 
       if (ranking.length > 1) {
         [ranking[0], ranking[1]] = [ranking[1], ranking[0]];
@@ -102,39 +128,12 @@ export const Dashboard = () => {
 
       setRankingEmocoes(ranking);
     };
+  
 
     calculaRanking(emocaoData);
   }, [emocaoData]);
 
-  async function fetchGeminiChatResponse(userMessage) {
-    const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY); 
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-
-    try {
-      const chat = model.startChat({
-        history: [
-          {
-            role: 'user',
-            parts: [{ text: userMessage }],
-          },
-          {
-            role: 'model',
-            parts: [{ text: "Você é um analista de sentimentos e deve analisar qual é o sentimento da empresa e responder em uma linha" }],
-          },
-        ],
-        generationConfig: {
-          maxOutputTokens: 100,
-        },
-      });
-
-      const result = await chat.sendMessage(userMessage);
-      return result.response.text();
-    } catch (error) {
-      console.error("Erro ao buscar dados do Gemini:", error.message);
-      return "Erro ao gerar resposta.";
-    }
-  }
-
+ 
   const chartData = useMemo(() => {
     const graphData = emocaoData.reduce((acc, item) => {
       const emocao = emotiOptionList.find(e => e.id === item.sentimento_id);
@@ -152,41 +151,56 @@ export const Dashboard = () => {
   const renderCustomizedLabel = ({ percent, name }) => `${name}: ${(percent * 100).toFixed(0)}%`;
 
   return (
-    <div className={styles.container}>
-      <div className={styles.subContainer}>
-        <h2 className={styles.h2Ranking}>Ranking de sentimentos</h2>
-        <div className={styles.containerGraficoEmoti}>
-          <div className={styles.containerRanking}>
-            {rankingEmocoes.map((item, index) => (
-              <div
-                key={index}
-                className={`${styles.emojiWrapper} ${index === 0 ? styles.center : index === 1 ? styles.right : styles.left}`}
-              >
-                <div className={styles.itemContainerRanking}>
-                  <div className={styles.emoti}>
-                    <img src={item.url} alt={item.nome} className={styles.emojiImage} />
-                  </div>
-                  <div className={`${styles.bar} ${styles[`bar${index + 1}`]}`} style={{ width: `${item.count * 10}%` }}></div>
-                  <p className={styles.ranking}>{item.nome} <br /> ({item.count} votos)</p>
-                </div>
-              </div>
-            ))}
-          </div>
+    <div className={styles.dashboardMain}>
+      <div className={styles.dashboardDubcontainer}>
+        <h2 className={styles.h2Ranking}>Clima organizacional</h2>
+        <div className={styles.areaGrafico}>{/*    */}
 
-          <div className={styles.containerGrafico}>
-            <div className={styles.chart1}>
-              <BarChart width={900} height={300} data={chartData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="name" />
-                <YAxis />
-                <Tooltip />
-                <Legend />
-                <Bar dataKey="count" fill="#5b55cc" />
-              </BarChart>
+
+          <div className={styles.containerGrafcoSide}>
+
+
+            <div className={styles.containerIcons}>
+
+              {rankingEmocoes.map((item, index) => (
+                <div
+                  key={index}
+                  className={`${styles.emojiWrapper} ${index === 0 ? styles.center : index === 1 ? styles.right : styles.left}`}
+                >
+                  <div className={styles.podio}>
+                    <div className={styles.emoti}>
+                      <img
+                        src={item.url}
+                        alt={item.nome}
+                        className={`${styles.emojiImage} ${styles[`animation${index + 1}`]}`}
+                      />
+                    </div>
+                    <div className={`${styles.bar} ${styles[`bar${index + 1}`]}`} style={{ width: `${item.count * 10}%` }}></div>
+                    <p className={styles.ranking}>{item.nome} <br /> ({item.count} votos)</p>
+                  </div>
+                </div>
+              ))}
             </div>
 
+            <div className={styles.containerGrafico}>
+              <div className={styles.chart1}>
+                <BarChart width={1000} height={300} data={chartData}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="name" />
+                  <YAxis />
+                  <Tooltip />
+                  <Legend />
+                  <Bar dataKey="count" fill="#5b55cc" />
+                </BarChart>
+              </div>
+
+            </div>
+          </div>
+
+          <div className={styles.pierRobot}>
+
             <div className={styles.chart}>
-              <PieChart width={900} height={450}>
+              <PieChart width={700} height={450}>
                 <Pie
                   data={chartData}
                   dataKey="count"
@@ -204,15 +218,21 @@ export const Dashboard = () => {
                 <Tooltip />
               </PieChart>
             </div>
+
+            <div className={styles.containerRobo}>
+
+              <div className={messageActive ? styles.messageBoxDisable:styles.messageBox}>
+                <p className={messageActive ? styles.messagetextDisable:styles.messageText}>{geminiResponse}</p>
+            
+              </div>
+
+              <img src="/personagem/di.png" alt="personagem" className={styles.characterImage} />
+            </div>
           </div>
+
         </div>
-        <div className={styles.containerRobo}>
-          <div className={styles.messageBox}>
-            <p className={styles.messageText}>{geminiResponse}</p>
-            <div className={styles.triangle}></div>
-          </div>
-          <img src="/personagem/di.png" alt="personagem" className={styles.characterImage} />
-        </div>
+
+
       </div>
     </div>
   );

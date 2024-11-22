@@ -1,137 +1,216 @@
-.container {
-  display: flex;
-  height: 100vh;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  background-color: #eeee;
-  color: #5b55cc;
+.dashboardMain {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
 }
 
-.subContainer {
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 15px;
+.dashboardDubcontainer {
+    flex-direction: column;
+    display: flex;
+    padding: 15px;
+    border: 1px solid #8A2BE2;
 
-  width: 90vw;
-
-
-  border: 3px solid#5b55cc;
-}
-
-.h2Ranking {
-  position: absolute;
-  top: 5%;
-  left: 20%;
-  transform: translate(-50%, -50%);
-  font-size: 4rem;
-
-}
-
-.containerRanking {
-  display: flex;
-  gap: 15px;
-  margin-bottom: 50px;
-  height: 50%;
-  
-}
-
-.containerRanking>.emojiWrapper:nth-child(2) {
-  margin-top: -60px;
-
-}
-
-.containerGraficoEmoti {
-  display: flex;
- flex-direction: column;
- align-self: flex-end;
- 
-
-  width: 100%;
-  
-  
 
 
 }
 
-.itemContainerRanking {
-  text-align: center;
-  width: 100%;
+.h2Ranking {
+    display: flex;
+    width: 100%;
+    justify-content: flex-end;
 
+    border-radius: 5px;
+
+    background-color: #8A2BE2;
+
+
+    padding: 5px;
+    padding-right: 50px;
+    color: #fff;
+    font-size: 5rem;
 }
 
-.ranking {
-  height: 50px;
+.areaGrafico {
+    flex-wrap: wrap;
+    display: flex;
+    width: 90vw;
+}
+
+.containerGrafcoSide {
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+
+
 }
 
 .emoti {
+    display: flex;
+    padding: 15px;
+    align-items: center;
+}
 
-  background-color: #5b55cc;
-  margin-bottom: 15px;
+.animation1 {
 
+    animation: upDown 500ms ease-out infinite alternate;
+}
 
+.animation2 {
+
+    animation: upDown 600ms ease-out infinite alternate;
+}
+
+.animation3 {
+
+    animation: upDown 300ms ease-out infinite alternate;
+}
+
+@keyframes upDown {
+    0% {
+        transform: translateY(0);
+    }
+
+    50% {
+        transform: translateY(20px);
+
+    }
+
+    100% {
+        transform: translateY(-150px);
+
+    }
+}
+
+.containerIcons {
+    display: flex;
 }
 
 .emojiWrapper {
-  color: #EFEFEF;
-  background-color: #5b55cc;
-  width: 450px;
-  font-size: 1.5rem;
-  padding: 15px;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-start;
-  align-items: center;
+    display: grid;
+    align-items: flex-end;
+
 }
 
-.containerGrafico {
-  display: flex;
-  height: 100%;
-  justify-content: center;
-  align-items: flex-end;
-  width: 100%;
+
+.bar {
+    border-radius: 5px 5px 0 0;
+    height: 100px;
+    min-width: 250px;
+    background-color: #8A2BE2;
 }
 
-.chart{
-  width: 800px;
-  font-size: 1.8rem;
+.bar2 {
+
+    height: 150px;
+    min-width: 250px;
+    background-color: #8A2BE2;
 }
 
-.containerRobo{
-  padding: 20px;
+.bar3 {
+
+    height: 50px;
+    min-width: 250px;
+    background-color: #8A2BE2;
 }
+
+.ranking {
+    color: #fff;
+    padding: 15px;
+    text-align: center;
+    width: 250px;
+    font-size: 2rem;
+    background-color: #8A2BE2;
+}
+
+.pierRobot {
+    display: grid;
+    width: 700px;
+
+    gap: 30px;
+}
+
+
+
+
+
+
+@media (max-width:1800px) {
+    .pierRobot {
+        flex-direction: row;
+        width: 100%;
+        margin-top: 150px;
+    }
+
+
+}
+
+@media (max-width:1045px) {
+    .pierRobot {
+        display: none;
+    }
+}
+.messagetextDisable{
+
+    display: none;
+}
+
+.messageBoxDisable{
+    transition: 0.3s ease-in;
+
+    position: absolute;
+    top: 100px;
+    right:  180px;
+    background-color: #fff;
+    border: 2px solid #8A2BE2;
+    border-radius: 10px;
+    padding: 0px;
+    height: 0px;
+    text-align: center;
+    font-size: 1.4rem;
+    color: #8A2BE2;
+    box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.2);
+    width: 0px;
+    
+}
+
 
 .messageBox {
-  position: relative;
-  width: 500px;
-  height: 350px;
-  padding: 15px;
-  border:3px solid #004080;
-  color: #ffffff;
-  border-radius: 10px;
-  margin-bottom: 20px;
-  text-align: center;
+    transition: 0.3s;
+    position: absolute;
+    top: -80px;
+    right:  190px;
+    background-color: #fff;
+    border: 2px solid #8A2BE2;
+    border-radius: 10px;
+    padding: 15px;
+    height: 150px;
+    text-align: center;
+    font-size: 1.4rem;
+    color: #8A2BE2;
+    box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.2);
+    width: 350px;
 }
 
-.messageText {
-  font-size: 1.6rem;
-  display: flex;
-  align-items: center;
-  color: #004080;
-  overflow-y:scroll ;
-  height: 100%;
+/* Triângulo do balão */
+
+.containerRobo {
+    display: grid;
+    position: relative;
+    width: 100%;
+    height: 200px;
 }
 
-/* Triângulo do balão de conversa */
-.triangle {
-  position: absolute;
-  bottom: -15px;
-  right: 10%;
-  width: 0;
-  height: 0;
-  border-left: 15px solid transparent;
-  border-right: 15px solid transparent;
-  border-top: 15px solid #004080;
+
+/* Imagem da personagem */
+.characterImage {
+    position: absolute;
+    top: 0;
+    right: 25px;
+    width: 200px;
+    height: auto;
+    box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.2);
+    object-fit: cover;
+    border-radius: 50%;
+    border: 2px solid #8A2BE2;
 }

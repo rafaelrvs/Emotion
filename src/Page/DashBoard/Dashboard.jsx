@@ -35,6 +35,7 @@ useEffect(()=>{
   
   useEffect(() => {
     const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+    //const socket = new WebSocket(`${protocol}localhost:3000/ws/`);
     const socket = new WebSocket(`${protocol}//clima.amalfis.com.br/ws/`);
 
     socket.onopen = () => {
@@ -74,6 +75,7 @@ useEffect(()=>{
   useEffect(() => {
     const fetchData = async () => {
       try {
+        //const response = await fetch('http://localhost:8080/api/usuario_emocao');
         const response = await fetch('https://clima.amalfis.com.br/api/usuario_emocao');
         const data = await response.json();
 
@@ -118,7 +120,7 @@ useEffect(()=>{
 
       if (ranking === ranking) {
 
-        setGeminiResponse("Esse é o clima organizacional")
+        setGeminiResponse("Esse como você esta se sentindo hoje?")
         
       }
 
@@ -153,7 +155,7 @@ useEffect(()=>{
   return (
     <div className={styles.dashboardMain}>
       <div className={styles.dashboardDubcontainer}>
-        <h2 className={styles.h2Ranking}>Clima organizacional</h2>
+        <h2 className={styles.h2Ranking}>Como estou me sentindo</h2>
         <div className={styles.areaGrafico}>{/*    */}
 
 
@@ -175,7 +177,7 @@ useEffect(()=>{
                         className={`${styles.emojiImage} ${styles[`animation${index + 1}`]}`}
                       />
                     </div>
-                    <div className={`${styles.bar} ${styles[`bar${index + 1}`]}`} style={{ width: `${item.count * 10}%` }}></div>
+                    <div className={`${styles.bar} ${styles[`bar${index + 1}`]}`} ></div>
                     <p className={styles.ranking}>{item.nome} <br /> ({item.count} votos)</p>
                   </div>
                 </div>

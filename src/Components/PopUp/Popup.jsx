@@ -2,9 +2,6 @@ import styles from"./Popup.module.css"
 import React from 'react'
 export const Popup = ({emocao,setImagemEscolhida,emocaoID}) => {
 
- 
-    
-
   return (
     <div className={styles.popUp}>
         Você está {emocao} hoje?

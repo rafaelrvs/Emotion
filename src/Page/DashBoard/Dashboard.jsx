@@ -28,7 +28,7 @@ export const Dashboard = () => {
   }, [emocaoData])
   useEffect(() => {
     const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-    //const socket = new WebSocket(`${protocol}//localhost:3000/ws/`);
+   // const socket = new WebSocket(`${protocol}//localhost:3000/ws/`);
      const socket = new WebSocket(`${protocol}//clima.amalfis.com.br/ws/`);
 
     socket.onopen = () => {
@@ -227,7 +227,7 @@ export const Dashboard = () => {
             nameKey="name"
             cx="50%"
             cy="50%"
-            outerRadius={150}
+            outerRadius={250}
             fill="#8884d8"
             label={renderCustomizedLabel}
             >

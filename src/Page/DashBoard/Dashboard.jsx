@@ -11,7 +11,15 @@ export const Dashboard = () => {
   const [messageActive, setMessageActive] = useState(false);
   const [error, setError] = useState(false);
 
+  function reloadTask() {
+    console.log("Reload executado em:", new Date());
+   
+  }
+  
 
+  const interval = 5 * 60 * 1000;
+  
+  setInterval(reloadTask, interval);
 
   useEffect(() => {
 
